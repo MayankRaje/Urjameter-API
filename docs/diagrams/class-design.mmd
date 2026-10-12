@@ -1,0 +1,31 @@
+classDiagram
+    MeterController --> MeterService
+    TransformerController --> TransformerService
+    MeterService --> UrjaPortalClient
+    TransformerService --> UrjaPortalClient
+    MeterService --> PortalMapper
+    TransformerService --> PortalMapper
+    UrjaPortalClient --> PortalSessionManager
+    UrjaPortalClient --> PortalHttpTransport
+    UrjaPortalClient --> ExportRequestSigner
+    PortalSessionManager --> PortalHttpTransport
+    PortalSessionManager --> PortalProperties
+    PortalHttpTransport --> PortalProperties
+
+    class MeterController {
+        list(search, page)
+        detail(id)
+        location(id)
+        readings(id)
+        export()
+    }
+    class TransformerController {
+        list(page)
+    }
+    class PortalSessionManager {
+        ensureAuthenticated()
+        invalidate()
+    }
+    class ExportRequestSigner {
+        sign(secret, timestamp)
+    }

@@ -1,0 +1,815 @@
+{
+  "info": {
+    "_postman_id": "eb8bb3ce-3b97-4ea9-8b5b-f83e6a28b29e",
+    "name": "Urjameter API - Recruiter Review",
+    "description": "Self-contained local collection: import and run in order, with no environment selection or manual request inputs. Defaults target http://127.0.0.1:8080. Request 01 automatically captures a meter ID and serial for later requests. The Spring Boot server must already be running with its portal credentials configured. No credentials, cookies, or signing secrets are included. Signed export has passed live checks; session expiry remains unverified; success checks fail on upstream errors.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Meters",
+      "item": [
+        {
+          "name": "01 - List meters (capture a meter for later requests)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/meters?search=&page=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "meters"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Sets meterId, search, and serialNumber in the collection from the first returned meter. No total count is hard-coded."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Pagination contract\", function () { const b = pm.response.json(); pm.expect(b.data).to.be.an(\"array\"); pm.expect(b.pagination.page).to.be.a(\"number\"); pm.expect(b.pagination.pageSize).to.be.above(0); pm.expect(b.pagination.totalItems).to.be.at.least(0); pm.expect(b.pagination.totalPages).to.be.at.least(0); });",
+                  "pm.test(\"First page\", function () { pm.expect(pm.response.json().pagination.page).to.eql(1); });",
+                  "if (pm.response.code === 200) { const rows = pm.response.json().data; if (Array.isArray(rows) && rows.length) { pm.collectionVariables.set(\"meterId\", rows[0].meterId); pm.collectionVariables.set(\"search\", rows[0].meterId); pm.collectionVariables.set(\"serialNumber\", rows[0].serialNumber); } }"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "02 - Search by meter ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/meters?search={{search}}&page=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "meters"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "{{search}}"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Uses the meter ID captured by request 01. Search behavior is delegated to the portal."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Pagination contract\", function () { const b = pm.response.json(); pm.expect(b.data).to.be.an(\"array\"); pm.expect(b.pagination.page).to.be.a(\"number\"); pm.expect(b.pagination.pageSize).to.be.above(0); pm.expect(b.pagination.totalItems).to.be.at.least(0); pm.expect(b.pagination.totalPages).to.be.at.least(0); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "03 - Search by serial number",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/meters?search={{serialNumber}}&page=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "meters"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "{{serialNumber}}"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Uses the serial number captured by request 01."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Pagination contract\", function () { const b = pm.response.json(); pm.expect(b.data).to.be.an(\"array\"); pm.expect(b.pagination.page).to.be.a(\"number\"); pm.expect(b.pagination.pageSize).to.be.above(0); pm.expect(b.pagination.totalItems).to.be.at.least(0); pm.expect(b.pagination.totalPages).to.be.at.least(0); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "04 - Next meter page",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/meters?search=&page=2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "meters"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "2"
+                }
+              ]
+            },
+            "description": "Lists page 2 without a filter. Keep the same search text when paging through filtered results. Requires at least two pages in the portal dataset."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Pagination contract\", function () { const b = pm.response.json(); pm.expect(b.data).to.be.an(\"array\"); pm.expect(b.pagination.page).to.be.a(\"number\"); pm.expect(b.pagination.pageSize).to.be.above(0); pm.expect(b.pagination.totalItems).to.be.at.least(0); pm.expect(b.pagination.totalPages).to.be.at.least(0); });",
+                  "pm.test(\"Second page\", function () { pm.expect(pm.response.json().pagination.page).to.eql(2); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "05 - Clear search / return to first page",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/meters?search=&page=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "meters"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Pagination contract\", function () { const b = pm.response.json(); pm.expect(b.data).to.be.an(\"array\"); pm.expect(b.pagination.page).to.be.a(\"number\"); pm.expect(b.pagination.pageSize).to.be.above(0); pm.expect(b.pagination.totalItems).to.be.at.least(0); pm.expect(b.pagination.totalPages).to.be.at.least(0); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "06 - Search with no expected matches",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/meters?search=__postman_no_match_urja_7b64e219__&page=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "meters"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "__postman_no_match_urja_7b64e219__"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "The synthetic search is expected not to match current data; adjust it if the dataset ever contains a match."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Pagination contract\", function () { const b = pm.response.json(); pm.expect(b.data).to.be.an(\"array\"); pm.expect(b.pagination.page).to.be.a(\"number\"); pm.expect(b.pagination.pageSize).to.be.above(0); pm.expect(b.pagination.totalItems).to.be.at.least(0); pm.expect(b.pagination.totalPages).to.be.at.least(0); });",
+                  "pm.test(\"Empty search result\", function () { const b = pm.response.json(); pm.expect(b.data).to.have.lengthOf(0); pm.expect(b.pagination.totalItems).to.eql(0); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "07 - Meter details / nameplate / hierarchy",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/meters/{{meterId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "meters",
+                "{{meterId}}"
+              ]
+            },
+            "description": "Depends on live export access. Export signing is implemented; a 502 is a failure of this success check, not a pass."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Detail contract\", function () { const b = pm.response.json(); pm.expect(b.meter.meterId).to.eql(pm.collectionVariables.get(\"meterId\")); pm.expect(b.installationType).to.be.a(\"string\"); pm.expect(b.hierarchy).to.be.an(\"array\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "08 - Meter location",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/meters/{{meterId}}/location",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "meters",
+                "{{meterId}}",
+                "location"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Location contract\", function () { const b = pm.response.json(); pm.expect(b.meterId).to.eql(pm.collectionVariables.get(\"meterId\")); pm.expect(b.location).to.have.property(\"latitude\"); pm.expect(b.location).to.have.property(\"longitude\"); for (const key of [\"latitude\", \"longitude\"]) { if (b.location[key] !== null) pm.expect(b.location[key]).to.be.a(\"number\"); } });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "09 - Meter readings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/meters/{{meterId}}/readings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "meters",
+                "{{meterId}}",
+                "readings"
+              ]
+            },
+            "description": "Readings are not derived interval usage. Timestamp timezone is currently unverified."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Readings contract\", function () { const b = pm.response.json(); pm.expect(b.meterId).to.eql(pm.collectionVariables.get(\"meterId\")); pm.expect(b.readings).to.be.an(\"array\"); pm.expect(b).to.have.property(\"timestampTimezone\"); if (b.readings.length) pm.expect(b.readings[0]).to.have.all.keys(\"timestamp\", \"kwh\", \"kvah\", \"voltageR\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Transformers",
+      "item": [
+        {
+          "name": "10 - List transformers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transformers?page=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transformers"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Pagination contract\", function () { const b = pm.response.json(); pm.expect(b.data).to.be.an(\"array\"); pm.expect(b.pagination.page).to.be.a(\"number\"); pm.expect(b.pagination.pageSize).to.be.above(0); pm.expect(b.pagination.totalItems).to.be.at.least(0); pm.expect(b.pagination.totalPages).to.be.at.least(0); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "11 - Next transformer page",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transformers?page=2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transformers"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "2"
+                }
+              ]
+            },
+            "description": "Requires two pages; the captured dataset has 40 transformers at 20 per page."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Pagination contract\", function () { const b = pm.response.json(); pm.expect(b.data).to.be.an(\"array\"); pm.expect(b.pagination.page).to.be.a(\"number\"); pm.expect(b.pagination.pageSize).to.be.above(0); pm.expect(b.pagination.totalItems).to.be.at.least(0); pm.expect(b.pagination.totalPages).to.be.at.least(0); });",
+                  "pm.test(\"Second page\", function () { pm.expect(pm.response.json().pagination.page).to.eql(2); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Export",
+      "item": [
+        {
+          "name": "12 - Export all meters",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/meters/export",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "meters",
+                "export"
+              ]
+            },
+            "description": "Signed export access has passed a point-in-time live check. This test expects 200 and must fail on an upstream error; do not treat 502 as successful integration."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Complete unique export\", function () { const b = pm.response.json(); pm.expect(b.data).to.be.an(\"array\"); pm.expect(b.total).to.eql(b.data.length); const ids = b.data.map(m => m.meter.meterId); pm.expect(new Set(ids).size).to.eql(ids.length); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Validation errors",
+      "item": [
+        {
+          "name": "13 - Reject meter page zero",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/meters?page=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "meters"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Problem response\", function () { const b = pm.response.json(); pm.expect(b.status).to.eql(400); pm.expect(b.detail).to.be.a(\"string\"); pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/problem+json\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "14 - Reject nonnumeric page",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/meters?page=abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "meters"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "abc"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Problem response\", function () { const b = pm.response.json(); pm.expect(b.status).to.eql(400); pm.expect(b.detail).to.be.a(\"string\"); pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/problem+json\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "15 - Reject invalid meter ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/meters/invalid!",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "meters",
+                "invalid!"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Problem response\", function () { const b = pm.response.json(); pm.expect(b.status).to.eql(400); pm.expect(b.detail).to.be.a(\"string\"); pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/problem+json\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "16 - Reject transformer page zero",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transformers?page=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transformers"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Problem response\", function () { const b = pm.response.json(); pm.expect(b.status).to.eql(400); pm.expect(b.detail).to.be.a(\"string\"); pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/problem+json\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Documentation",
+      "item": [
+        {
+          "name": "17 - OpenAPI specification",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, application/problem+json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/openapi.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "openapi.json"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON response\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"); });",
+                  "pm.test(\"Six documented paths\", function () { const b = pm.response.json(); pm.expect(b.openapi).to.eql(\"3.1.0\"); pm.expect(Object.keys(b.paths)).to.have.lengthOf(6); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8080",
+      "type": "string"
+    },
+    {
+      "key": "meterId",
+      "value": "J100000",
+      "type": "string"
+    },
+    {
+      "key": "search",
+      "value": "J100000",
+      "type": "string"
+    },
+    {
+      "key": "serialNumber",
+      "value": "SE33962",
+      "type": "string"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Resolve from this collection only; selected environments cannot override these defaults.",
+          "for (const key of [\"baseUrl\", \"meterId\", \"search\", \"serialNumber\"]) { pm.variables.set(key, pm.collectionVariables.get(key)); }"
+        ]
+      }
+    }
+  ]
+}

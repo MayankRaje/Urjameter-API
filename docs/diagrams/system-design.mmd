@@ -1,0 +1,15 @@
+flowchart LR
+    Consumer["Postman<br/>API consumer"] --> Controller
+
+    subgraph Application["Spring Boot application"]
+        direction LR
+        Controller["REST controllers"] --> Service["Application services"]
+        Service --> Client["UrjaPortalClient"]
+        Client --> Transport["HTTP transport<br/>Session cookie store"]
+        Service --> Mapper["PortalMapper<br/>Public response models"]
+        Client --> Session["PortalSessionManager<br/>Login and access check"]
+        Session --> Transport
+        Client --> Signer["ExportRequestSigner<br/>Export only"]
+    end
+
+    Transport --> Portal["Existing Urja portal"]

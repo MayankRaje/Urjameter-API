@@ -1,0 +1,53 @@
+flowchart TB
+    Start((Start)) --> Login["Enter email and password"]
+    Login --> Auth["Submit login<br/>POST /login"]
+    Auth --> Success{"Authentication successful?"}
+    Success -->|No: UI behavior to verify| Failure["Display authentication error"]
+    Failure --> Login
+    Success -->|Yes| Landing["Open Meters page<br/>Captured login redirect"]
+    Landing --> Initial["Load and display meters<br/>GET /portal/meters/search?q=&amp;page=1"]
+    Initial --> Navigation{"Choose navigation"}
+
+    subgraph MeterJourney["Meter journey"]
+        direction TB
+        MeterAction{"Choose meter action"}
+        MeterAction -->|Search| Search["Enter meter number or serial<br/>Reset page to 1"]
+        MeterAction -->|Clear search| Clear["Clear search text<br/>Reset page to 1"]
+        Search --> SearchRequest["GET /portal/meters/search<br/>q=search text; page=1"]
+        Clear --> SearchRequest
+        SearchRequest --> Results{"Results available?"}
+        Results -->|Yes| MeterRows["Display meter rows<br/>and pagination"]
+        Results -->|No| Empty["Display No meters found"]
+        MeterRows --> MeterAction
+        Empty --> MeterAction
+        MeterAction -->|Previous / Next| ChangePage["Change page<br/>Retain search text"]
+        ChangePage --> PageRequest["GET /portal/meters/search<br/>q=current search; page=selected page"]
+        PageRequest --> Results
+        MeterAction -->|Select meter| Detail["Open /meters/{id}"]
+        Detail --> DetailView["Display nameplate and hierarchy<br/>Fetch location and readings"]
+        DetailView --> DetailAction{"Choose action"}
+        DetailAction -->|Back to meters| MeterAction
+    end
+
+    subgraph TransformerJourney["Transformer journey"]
+        direction TB
+        Transformers["Load and display transformers<br/>GET /portal/dts?page=1"]
+        DTAction{"Choose transformer action"}
+        Transformers --> DTAction
+        DTAction -->|Previous / Next| DTPage["GET /portal/dts?page=selected page"]
+        DTPage --> DTRows["Display transformer rows<br/>and pagination"]
+        DTRows --> DTAction
+        DTAction -->|Export all meters| Key["GET /portal/keys<br/>Fetch signing key"]
+        Key --> Sign["Generate timestamp<br/>and HMAC-SHA256 signature"]
+        Sign --> Export["Signed GET /portal/export?page=1"]
+        Export --> ExportResult["Receive bulk meter data"]
+        ExportResult --> DTAction
+    end
+
+    Navigation -->|Meters| MeterAction
+    Navigation -->|Transformers| Transformers
+    MeterAction -->|Navigate| Navigation
+    DetailAction -->|Navigate| Navigation
+    DTAction -->|Navigate| Navigation
+    Navigation -->|Sign out: request not captured| Logout["Return to sign-in"]
+    Logout --> Login

@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant Consumer
+    participant Controller
+    participant Service
+    participant Client as UrjaPortalClient
+    participant Session as PortalSessionManager
+    participant Portal
+    Consumer->>Controller: GET /api/v1/meters?search=...&page=1
+    Controller->>Service: Validate search and page
+    Service->>Client: searchMeters(query, page)
+    Client->>Session: ensureAuthenticated()
+    alt Session not initialized
+        Session->>Portal: POST /login (form fields)
+        Portal-->>Session: JSON action result and session cookies
+        Session->>Portal: Search probe using retained cookie
+        Portal-->>Session: Valid search response
+    end
+    Client->>Portal: GET /portal/meters/search with session cookie
+    Portal-->>Client: Portal JSON
+    Client-->>Service: Parsed response
+    Service-->>Controller: Mapped response DTO
+    Controller-->>Consumer: JSON response
